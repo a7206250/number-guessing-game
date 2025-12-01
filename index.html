@@ -3,84 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>猜數字高手 1A2B - 提示版</title>
+    <title>猜數字 PK 戰 1A2B</title>
     <style>
         /* --- CSS 外觀設計 --- */
         body {
             font-family: 'Comic Sans MS', '微軟正黑體', sans-serif;
-            background-color: #FFF3E0;
+            background-color: #ECEFF1;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            transition: background-color 0.5s; /* 讓背景換色有過渡效果 */
         }
 
         .game-container {
             background-color: #ffffff;
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             text-align: center;
             max-width: 500px;
             width: 100%;
-            border: 5px solid #FFCC80;
+            border: 5px solid #CFD8DC;
+            transition: border-color 0.5s;
         }
 
-        h1 { color: #EF6C00; margin-bottom: 10px; }
-        
+        /* 玩家狀態顯示 */
+        .player-indicator {
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: white;
+            transition: background-color 0.5s;
+        }
+
+        /* 玩家 1 主題色 (藍) */
+        .p1-turn body { background-color: #E3F2FD; }
+        .p1-turn .game-container { border-color: #2196F3; }
+        .p1-turn .player-indicator { background-color: #2196F3; }
+        .p1-turn button.guess-btn { background-color: #2196F3; }
+        .p1-turn button.guess-btn:hover { background-color: #1976D2; }
+
+        /* 玩家 2 主題色 (紅) */
+        .p2-turn body { background-color: #FFEBEE; }
+        .p2-turn .game-container { border-color: #F44336; }
+        .p2-turn .player-indicator { background-color: #F44336; }
+        .p2-turn button.guess-btn { background-color: #F44336; }
+        .p2-turn button.guess-btn:hover { background-color: #D32F2F; }
+
         .settings-panel {
             margin-bottom: 15px;
-            padding: 10px;
-            background-color: #E0F7FA;
+            padding: 5px;
+            background-color: #f0f0f0;
             border-radius: 10px;
             display: inline-block;
         }
 
         select {
-            padding: 8px;
+            padding: 5px;
             font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #00BCD4;
-            background-color: white;
-            cursor: pointer;
-            font-family: inherit;
         }
 
-        .rules {
-            background-color: #FFF8E1;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        /* 新增：提示區域樣式 */
+        /* 提示區域 */
         .hint-area {
-            background-color: #F3E5F5; /* 淺紫色背景 */
-            padding: 15px;
+            background-color: #F3E5F5;
+            padding: 10px;
             border-radius: 10px;
             margin-bottom: 20px;
             border: 2px dashed #AB47BC;
+            position: relative;
         }
-
         .hint-text {
-            font-size: 28px;
+            font-size: 24px;
             letter-spacing: 5px;
             font-weight: bold;
             color: #7B1FA2;
-            margin: 10px 0;
+            margin: 5px 0;
         }
-
+        .hint-note { font-size: 12px; color: #888; }
+        
         .hint-btn {
-            background-color: #9C27B0; /* 紫色按鈕 */
-            font-size: 16px;
-            padding: 8px 16px;
+            background-color: #9C27B0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
         }
-        .hint-btn:hover { background-color: #7B1FA2; }
         .hint-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
         .input-group {
@@ -100,10 +113,9 @@
             letter-spacing: 5px;
         }
 
-        button {
+        button.guess-btn {
             padding: 10px 20px;
             font-size: 18px;
-            background-color: #FF9800;
             color: white;
             border: none;
             border-radius: 10px;
@@ -111,14 +123,11 @@
             transition: background 0.3s;
         }
 
-        button:hover { background-color: #F57C00; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-
         .history-list {
             list-style: none;
             padding: 0;
             margin-top: 20px;
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
             border-top: 2px dashed #ddd;
         }
@@ -129,7 +138,20 @@
             padding: 10px;
             border-bottom: 1px solid #eee;
             font-size: 18px;
+            align-items: center;
         }
+
+        /* 歷史紀錄中的玩家標籤 */
+        .p-tag {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .p1-tag { background-color: #2196F3; }
+        .p2-tag { background-color: #F44336; }
 
         .badge {
             background-color: #eee;
@@ -137,9 +159,7 @@
             border-radius: 5px;
             font-weight: bold;
         }
-
         .badge-4a { background-color: #4CAF50; color: white; }
-        .badge-normal { background-color: #2196F3; color: white; }
 
         .message {
             margin-top: 10px;
@@ -152,41 +172,42 @@
             display: none;
             margin-top: 20px;
             width: 100%;
+            padding: 10px;
+            font-size: 18px;
             background-color: #607D8B;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
         }
 
     </style>
 </head>
-<body>
+<body id="mainBody" class="p1-turn">
 
     <div class="game-container">
-        <h1>🔢 猜數字高手 1A2B</h1>
-        
+        <div class="player-indicator" id="turnIndicator">
+            現在輪到：玩家 1 (藍隊)
+        </div>
+
         <div class="settings-panel">
-            <label for="difficulty">🎮 選擇難度：</label>
+            <label for="difficulty">難度：</label>
             <select id="difficulty" onchange="changeDifficulty()">
-                <option value="3">簡單 (3個數字)</option>
-                <option value="4" selected>普通 (4個數字)</option>
-                <option value="5">困難 (5個數字)</option>
+                <option value="3">簡單 (3字)</option>
+                <option value="4" selected>普通 (4字)</option>
+                <option value="5">困難 (5字)</option>
             </select>
         </div>
 
         <div class="hint-area">
-            <div>🕵️ 神秘代碼</div>
             <div id="hintDisplay" class="hint-text">❓ ❓ ❓ ❓</div>
-            <button onclick="revealOneDigit()" id="hintBtn" class="hint-btn">🔍 偷看一個字</button>
-        </div>
-
-        <div class="rules" id="ruleText">
-            <strong>規則說明：</strong><br>
-            請猜 <strong>4</strong> 個不重複的數字。<br>
-            <strong>A</strong> = 數字對且位置對。<br>
-            <strong>B</strong> = 數字對但位置錯。
+            <button onclick="revealOneDigit()" id="hintBtn" class="hint-btn">🔍 偷看 (共用)</button>
+            <div class="hint-note">注意：偷看會讓對手也看到答案喔！</div>
         </div>
 
         <div class="input-group">
             <input type="text" id="userGuess" placeholder="1234" maxlength="4">
-            <button onclick="checkGuess()" id="guessBtn">猜！</button>
+            <button onclick="checkGuess()" id="guessBtn" class="guess-btn">確認</button>
         </div>
 
         <div id="messageArea" class="message"></div>
@@ -201,7 +222,10 @@
 
         let secretCode = ""; 
         let currentLength = 4;
-        let revealedIndices = new Set(); // 用來記錄哪幾個位置已經被偷看過了
+        let revealedIndices = new Set(); 
+        
+        // 新增：目前玩家變數 (1 或 2)
+        let currentPlayer = 1;
 
         function changeDifficulty() {
             let selectBox = document.getElementById("difficulty");
@@ -210,22 +234,20 @@
         }
 
         function initGame() {
+            // 產生隨機數字
             let numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-            
             for (let i = numbers.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
             }
-
             secretCode = numbers.slice(0, currentLength).join("");
-            
             console.log("答案：" + secretCode);
 
-            // 重置提示狀態
-            revealedIndices.clear(); // 清空已偷看的紀錄
-            updateHintDisplay();     // 更新顯示為全問號
-
-            // 更新介面
+            // 重置遊戲狀態
+            revealedIndices.clear();
+            updateHintDisplay();
+            
+            // 重置介面
             let inputField = document.getElementById("userGuess");
             inputField.value = "";
             inputField.disabled = false;
@@ -235,60 +257,60 @@
             for(let i=1; i<=currentLength; i++) placeholderText += i;
             inputField.placeholder = placeholderText;
 
-            document.getElementById("ruleText").innerHTML = `
-                <strong>規則說明：</strong><br>
-                請猜 <strong>${currentLength}</strong> 個不重複的數字。<br>
-                <strong>A</strong> = 數字對且位置對。<br>
-                <strong>B</strong> = 數字對但位置錯。
-            `;
-
             document.getElementById("historyList").innerHTML = "";
             document.getElementById("messageArea").textContent = "";
             document.getElementById("guessBtn").disabled = false;
-            document.getElementById("hintBtn").disabled = false; // 啟用提示按鈕
+            document.getElementById("hintBtn").disabled = false;
             document.getElementById("restartBtn").style.display = "none";
+
+            // 設定初始玩家為 1
+            currentPlayer = 1;
+            updatePlayerUI();
         }
 
-        // --- 新增：更新提示顯示畫面 ---
+        // 更新介面主題顏色與文字
+        function updatePlayerUI() {
+            let body = document.getElementById("mainBody");
+            let indicator = document.getElementById("turnIndicator");
+            
+            // 清除舊的 class，加上新的 class
+            body.classList.remove("p1-turn", "p2-turn");
+            
+            if (currentPlayer === 1) {
+                body.classList.add("p1-turn");
+                indicator.textContent = "現在輪到：玩家 1 (藍隊) 🔵";
+            } else {
+                body.classList.add("p2-turn");
+                indicator.textContent = "現在輪到：玩家 2 (紅隊) 🔴";
+            }
+            
+            // 自動聚焦輸入框
+            document.getElementById("userGuess").focus();
+        }
+
         function updateHintDisplay() {
             let displayText = "";
             for (let i = 0; i < currentLength; i++) {
                 if (revealedIndices.has(i)) {
-                    // 如果這個位置被偷看過，顯示真正的數字
                     displayText += secretCode[i] + " ";
                 } else {
-                    // 否則顯示問號
                     displayText += "❓ ";
                 }
             }
             document.getElementById("hintDisplay").textContent = displayText;
         }
 
-        // --- 新增：偷看一個字的邏輯 ---
         function revealOneDigit() {
-            // 1. 找出所有還沒被揭曉的位置
             let availableIndices = [];
             for (let i = 0; i < currentLength; i++) {
-                if (!revealedIndices.has(i)) {
-                    availableIndices.push(i);
-                }
+                if (!revealedIndices.has(i)) availableIndices.push(i);
             }
+            if (availableIndices.length === 0) return;
 
-            // 2. 如果已經全部揭曉了，就不能再按了
-            if (availableIndices.length === 0) {
-                return;
-            }
-
-            // 3. 隨機選一個位置
             let randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-            
-            // 4. 加入已揭曉名單
             revealedIndices.add(randomIndex);
-
-            // 5. 更新畫面
             updateHintDisplay();
 
-            // 6. 如果只剩下最後一個沒揭曉，或許可以考慮自動全部顯示，或者停用按鈕
             if (revealedIndices.size === currentLength) {
                 document.getElementById("hintBtn").disabled = true;
             }
@@ -300,12 +322,11 @@
             let message = document.getElementById("messageArea");
 
             if (guess.length !== currentLength || isNaN(guess)) {
-                message.textContent = `請輸入 ${currentLength} 個數字喔！`;
+                message.textContent = `請輸入 ${currentLength} 個數字！`;
                 return;
             }
-            
             if (new Set(guess).size !== currentLength) {
-                message.textContent = "數字不能重複喔！";
+                message.textContent = "數字不能重複！";
                 return;
             }
 
@@ -315,46 +336,64 @@
             let countB = 0;
 
             for (let i = 0; i < currentLength; i++) {
-                if (guess[i] === secretCode[i]) {
-                    countA++;
-                } else if (secretCode.includes(guess[i])) {
-                    countB++;
-                }
+                if (guess[i] === secretCode[i]) countA++;
+                else if (secretCode.includes(guess[i])) countB++;
             }
 
             addHistory(guess, countA, countB);
 
             if (countA === currentLength) {
-                message.textContent = "🎉 恭喜你猜對了！太厲害了！";
-                message.style.color = "green";
+                // 獲勝！
+                message.textContent = `🎉 恭喜！玩家 ${currentPlayer} 獲勝！`;
+                message.style.color = currentPlayer === 1 ? "#2196F3" : "#F44336"; // 用勝利者的顏色
                 endGame();
+            } else {
+                // 沒猜對，切換下一位玩家
+                switchPlayer();
+                
+                // 清空並聚焦
+                guessInput.value = "";
+                guessInput.focus();
             }
+        }
 
-            guessInput.value = "";
-            guessInput.focus();
+        // 切換玩家邏輯
+        function switchPlayer() {
+            // 如果是 1 就變 2，是 2 就變 1
+            currentPlayer = (currentPlayer === 1) ? 2 : 1;
+            updatePlayerUI();
         }
 
         function addHistory(guess, a, b) {
             let list = document.getElementById("historyList");
             let listItem = document.createElement("li");
             listItem.className = "history-item";
+
             let isWin = (a === currentLength);
-            let resultBadgeClass = isWin ? "badge badge-4a" : "badge badge-normal";
+            let resultBadgeClass = isWin ? "badge badge-4a" : "badge";
+            
+            // 決定標籤顏色
+            let playerTagClass = (currentPlayer === 1) ? "p-tag p1-tag" : "p-tag p2-tag";
+            let playerName = (currentPlayer === 1) ? "P1" : "P2";
 
             listItem.innerHTML = `
-                <span>你猜：${guess}</span>
-                <span class="${resultBadgeClass}">${a}A${b}B</span>
+                <div>
+                    <span class="${playerTagClass}">${playerName}</span>
+                    <span>${guess}</span>
+                </div>
+                <span class="${resultBadgeClass}" style="background-color: ${isWin ? '#4CAF50' : '#eee'}; color: ${isWin ? 'white' : 'black'}">${a}A${b}B</span>
             `;
+            
             list.insertBefore(listItem, list.firstChild);
         }
 
         function endGame() {
             document.getElementById("userGuess").disabled = true;
             document.getElementById("guessBtn").disabled = true;
-            document.getElementById("hintBtn").disabled = true; // 遊戲結束不能再偷看
+            document.getElementById("hintBtn").disabled = true;
             document.getElementById("restartBtn").style.display = "block";
             
-            // 遊戲結束時，顯示全部答案
+            // 遊戲結束顯示全答案
             for(let i=0; i<currentLength; i++) revealedIndices.add(i);
             updateHintDisplay();
         }
@@ -365,6 +404,7 @@
             }
         });
 
+        // 啟動
         initGame();
 
     </script>
