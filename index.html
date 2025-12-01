@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>猜數字 PK 戰 1A2B - 音效加強版</title>
+    <title>猜數字 PK 戰 1A2B</title>
     <style>
         /* --- CSS 外觀設計 --- */
         body {
@@ -11,7 +11,7 @@
             background-color: #ECEFF1;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: flex-start; /* 靠上對齊 */
             min-height: 100vh;
             margin: 0;
             padding: 20px;
@@ -20,7 +20,7 @@
 
         .game-container {
             background-color: #ffffff;
-            padding: 30px;
+            padding: 25px;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             text-align: center;
@@ -28,57 +28,78 @@
             width: 100%;
             border: 5px solid #CFD8DC;
             transition: border-color 0.5s;
-            position: relative; /* 為了放靜音按鈕 */
         }
 
-        /* 靜音開關 */
+        /* --- 新增：頂部標題列 (包含標題與音效鈕) --- */
+        .header-row {
+            display: flex;
+            justify-content: space-between; /* 左右撐開 */
+            align-items: center; /* 垂直置中 */
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0; /* 下方加一條分隔線 */
+        }
+
+        .header-row h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #455A64;
+            text-align: left;
+        }
+
+        /* 音效開關 (現在在 header-row 裡面，不會重疊了) */
         .sound-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             font-size: 14px;
             background-color: #f0f0f0;
-            padding: 5px 10px;
-            border-radius: 15px;
+            padding: 6px 12px;
+            border-radius: 20px;
             cursor: pointer;
             user-select: none;
+            white-space: nowrap; /* 強制不換行 */
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .sound-toggle input {
+            width: auto;
+            margin: 0;
         }
 
         /* 玩家狀態顯示 */
         .player-indicator {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
-            padding: 10px;
-            border-radius: 10px;
+            padding: 15px;
+            border-radius: 12px;
             margin-bottom: 20px;
             color: white;
-            transition: background-color 0.5s;
-            margin-top: 10px;
+            transition: all 0.5s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         /* 玩家 1 主題色 (藍) */
         .p1-turn body { background-color: #E3F2FD; }
         .p1-turn .game-container { border-color: #2196F3; }
-        .p1-turn .player-indicator { background-color: #2196F3; }
+        .p1-turn .player-indicator { background-color: #2196F3; transform: scale(1.02); }
         .p1-turn button.guess-btn { background-color: #2196F3; }
         .p1-turn button.guess-btn:hover { background-color: #1976D2; }
 
         /* 玩家 2 主題色 (紅) */
         .p2-turn body { background-color: #FFEBEE; }
         .p2-turn .game-container { border-color: #F44336; }
-        .p2-turn .player-indicator { background-color: #F44336; }
+        .p2-turn .player-indicator { background-color: #F44336; transform: scale(1.02); }
         .p2-turn button.guess-btn { background-color: #F44336; }
         .p2-turn button.guess-btn:hover { background-color: #D32F2F; }
 
         .settings-panel {
             margin-bottom: 15px;
-            padding: 5px;
-            background-color: #f0f0f0;
+            padding: 8px;
+            background-color: #f9f9f9;
             border-radius: 10px;
             display: inline-block;
         }
 
-        select { padding: 5px; font-size: 16px; }
+        select { padding: 5px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; }
 
         /* 提示區域 */
         .hint-area {
@@ -89,21 +110,22 @@
             border: 2px dashed #AB47BC;
         }
         .hint-text {
-            font-size: 24px;
+            font-size: 26px;
             letter-spacing: 5px;
             font-weight: bold;
             color: #7B1FA2;
             margin: 5px 0;
         }
-        .hint-note { font-size: 12px; color: #888; }
+        .hint-note { font-size: 12px; color: #888; margin-top: 5px;}
         
         .hint-btn {
             background-color: #9C27B0;
             color: white;
             border: none;
             border-radius: 5px;
-            padding: 5px 10px;
+            padding: 5px 12px;
             cursor: pointer;
+            font-size: 14px;
         }
         .hint-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
@@ -114,7 +136,7 @@
             margin-bottom: 20px;
         }
 
-        input {
+        input[type="text"] {
             padding: 10px;
             font-size: 20px;
             width: 150px;
@@ -154,11 +176,12 @@
 
         .p-tag {
             font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 3px 8px;
+            border-radius: 12px;
             color: white;
             margin-right: 8px;
             vertical-align: middle;
+            font-weight: bold;
         }
         .p1-tag { background-color: #2196F3; }
         .p2-tag { background-color: #F44336; }
@@ -182,13 +205,20 @@
             display: none;
             margin-top: 20px;
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             font-size: 18px;
             background-color: #607D8B;
             color: white;
             border: none;
             border-radius: 10px;
             cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* 手機版優化：如果螢幕太窄，標題變小一點 */
+        @media (max-width: 400px) {
+            .header-row h1 { font-size: 18px; }
+            .sound-toggle { padding: 4px 8px; font-size: 12px; }
         }
 
     </style>
@@ -201,12 +231,15 @@
 
     <div class="game-container">
         
-        <label class="sound-toggle">
-            <input type="checkbox" id="muteToggle" checked> 🔊 音效開啟
-        </label>
+        <div class="header-row">
+            <h1>🏆 猜數字 PK 戰 1A2B</h1>
+            <label class="sound-toggle">
+                <input type="checkbox" id="muteToggle" checked> <span>音效開啟</span>
+            </label>
+        </div>
 
         <div class="player-indicator" id="turnIndicator">
-            現在輪到：玩家 1 (藍隊)
+            準備開始...
         </div>
 
         <div class="settings-panel">
@@ -230,9 +263,7 @@
         </div>
 
         <div id="messageArea" class="message"></div>
-
         <ul id="historyList" class="history-list"></ul>
-
         <button onclick="initGame()" id="restartBtn" class="restart-btn">再來一局</button>
     </div>
 
@@ -246,7 +277,6 @@
 
         // 音效控制
         function playSound(type) {
-            // 檢查是否靜音
             let isMute = !document.getElementById("muteToggle").checked;
             if (isMute) return;
 
@@ -256,14 +286,15 @@
             if (type === 'hint') audio = document.getElementById("soundHint");
 
             if (audio) {
-                audio.currentTime = 0; // 每次都從頭播放
-                audio.play().catch(e => console.log("瀏覽器阻擋自動播放，需使用者互動後才能播放"));
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("需使用者互動後才能播放音效"));
             }
         }
 
         // 靜音按鈕文字切換
         document.getElementById("muteToggle").addEventListener("change", function() {
-            this.parentNode.lastChild.textContent = this.checked ? " 🔊 音效開啟" : " 🔇 靜音模式";
+            // 找到旁邊的 span 更新文字
+            this.parentNode.querySelector("span").textContent = this.checked ? "音效開啟" : "靜音";
         });
 
         function changeDifficulty() {
@@ -311,10 +342,10 @@
             
             if (currentPlayer === 1) {
                 body.classList.add("p1-turn");
-                indicator.textContent = "現在輪到：玩家 1 (藍隊) 🔵";
+                indicator.textContent = "👉 輪到：玩家 1 (藍隊)";
             } else {
                 body.classList.add("p2-turn");
-                indicator.textContent = "現在輪到：玩家 2 (紅隊) 🔴";
+                indicator.textContent = "👉 輪到：玩家 2 (紅隊)";
             }
             
             document.getElementById("userGuess").focus();
@@ -337,110 +368,4 @@
             for (let i = 0; i < currentLength; i++) {
                 if (!revealedIndices.has(i)) availableIndices.push(i);
             }
-            if (availableIndices.length === 0) return;
-
-            let randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-            revealedIndices.add(randomIndex);
-            
-            // 播放提示音效
-            playSound('hint');
-            
-            updateHintDisplay();
-
-            if (revealedIndices.size === currentLength) {
-                document.getElementById("hintBtn").disabled = true;
-            }
-        }
-
-        function checkGuess() {
-            let guessInput = document.getElementById("userGuess");
-            let guess = guessInput.value;
-            let message = document.getElementById("messageArea");
-
-            if (guess.length !== currentLength || isNaN(guess)) {
-                message.textContent = `請輸入 ${currentLength} 個數字！`;
-                return;
-            }
-            if (new Set(guess).size !== currentLength) {
-                message.textContent = "數字不能重複！";
-                return;
-            }
-
-            message.textContent = ""; 
-
-            let countA = 0;
-            let countB = 0;
-
-            for (let i = 0; i < currentLength; i++) {
-                if (guess[i] === secretCode[i]) countA++;
-                else if (secretCode.includes(guess[i])) countB++;
-            }
-
-            addHistory(guess, countA, countB);
-
-            if (countA === currentLength) {
-                // 勝利！
-                message.textContent = `🎉 恭喜！玩家 ${currentPlayer} 獲勝！`;
-                message.style.color = currentPlayer === 1 ? "#2196F3" : "#F44336";
-                // 播放勝利音效
-                playSound('win');
-                endGame();
-            } else {
-                // 失敗，切換
-                // 播放切換音效
-                playSound('switch');
-                switchPlayer();
-                
-                guessInput.value = "";
-                guessInput.focus();
-            }
-        }
-
-        function switchPlayer() {
-            currentPlayer = (currentPlayer === 1) ? 2 : 1;
-            updatePlayerUI();
-        }
-
-        function addHistory(guess, a, b) {
-            let list = document.getElementById("historyList");
-            let listItem = document.createElement("li");
-            listItem.className = "history-item";
-
-            let isWin = (a === currentLength);
-            let resultBadgeClass = isWin ? "badge badge-4a" : "badge";
-            
-            let playerTagClass = (currentPlayer === 1) ? "p-tag p1-tag" : "p-tag p2-tag";
-            let playerName = (currentPlayer === 1) ? "P1" : "P2";
-
-            listItem.innerHTML = `
-                <div>
-                    <span class="${playerTagClass}">${playerName}</span>
-                    <span>${guess}</span>
-                </div>
-                <span class="${resultBadgeClass}" style="background-color: ${isWin ? '#4CAF50' : '#eee'}; color: ${isWin ? 'white' : 'black'}">${a}A${b}B</span>
-            `;
-            
-            list.insertBefore(listItem, list.firstChild);
-        }
-
-        function endGame() {
-            document.getElementById("userGuess").disabled = true;
-            document.getElementById("guessBtn").disabled = true;
-            document.getElementById("hintBtn").disabled = true;
-            document.getElementById("restartBtn").style.display = "block";
-            
-            for(let i=0; i<currentLength; i++) revealedIndices.add(i);
-            updateHintDisplay();
-        }
-
-        document.getElementById("userGuess").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                checkGuess();
-            }
-        });
-
-        initGame();
-
-    </script>
-</body>
-</html>
+            if (availableIndices.length ===
