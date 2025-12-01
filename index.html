@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>猜數字高手 1A2B</title>
+    <title>猜數字高手 1A2B - 多重難度版</title>
     <style>
         /* --- CSS 外觀設計 --- */
         body {
             font-family: 'Comic Sans MS', '微軟正黑體', sans-serif;
-            background-color: #FFF3E0; /* 溫暖的淺橘色背景 */
+            background-color: #FFF3E0;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* 內容靠上對齊，因為會有列表 */
+            align-items: flex-start;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
@@ -30,6 +30,25 @@
 
         h1 { color: #EF6C00; margin-bottom: 10px; }
         
+        /* 難度選擇區塊 */
+        .settings-panel {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #E0F7FA;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        select {
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #00BCD4;
+            background-color: white;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
         .rules {
             background-color: #FFF8E1;
             padding: 10px;
@@ -54,7 +73,7 @@
             text-align: center;
             border: 2px solid #ddd;
             border-radius: 10px;
-            letter-spacing: 5px; /* 讓數字間距寬一點 */
+            letter-spacing: 5px;
         }
 
         button {
@@ -70,13 +89,12 @@
 
         button:hover { background-color: #F57C00; }
 
-        /* 歷史紀錄列表 */
         .history-list {
             list-style: none;
             padding: 0;
             margin-top: 20px;
             max-height: 300px;
-            overflow-y: auto; /* 超過高度可以捲動 */
+            overflow-y: auto;
             border-top: 2px dashed #ddd;
         }
 
@@ -95,8 +113,8 @@
             font-weight: bold;
         }
 
-        .badge-4a { background-color: #4CAF50; color: white; } /* 勝利顏色 */
-        .badge-normal { background-color: #2196F3; color: white; } /* 一般提示顏色 */
+        .badge-4a { background-color: #4CAF50; color: white; }
+        .badge-normal { background-color: #2196F3; color: white; }
 
         .message {
             margin-top: 10px;
@@ -117,14 +135,22 @@
 <body>
 
     <div class="game-container">
-        <h1>🕵️‍♀️ 猜數字高手 1A2B</h1>
+        <h1>🔢 猜數字高手 1A2B</h1>
         
-        <div class="rules">
+        <div class="settings-panel">
+            <label for="difficulty">🎮 選擇難度：</label>
+            <select id="difficulty" onchange="changeDifficulty()">
+                <option value="3">簡單 (3個數字)</option>
+                <option value="4" selected>普通 (4個數字)</option>
+                <option value="5">困難 (5個數字)</option>
+            </select>
+        </div>
+
+        <div class="rules" id="ruleText">
             <strong>規則說明：</strong><br>
-            1. 請猜 <strong>4 個不重複</strong> 的數字。<br>
-            2. <strong>A</strong> 代表數字對且位置對。<br>
-            3. <strong>B</strong> 代表數字對但位置錯。<br>
-            4. 試著拿到 <strong>4A0B</strong> 吧！
+            請猜 <strong>4</strong> 個不重複的數字。<br>
+            <strong>A</strong> = 數字對且位置對。<br>
+            <strong>B</strong> = 數字對但位置錯。
         </div>
 
         <div class="input-group">
@@ -134,8 +160,7 @@
 
         <div id="messageArea" class="message"></div>
 
-        <ul id="historyList" class="history-list">
-            </ul>
+        <ul id="historyList" class="history-list"></ul>
 
         <button onclick="initGame()" id="restartBtn" class="restart-btn">再來一局</button>
     </div>
@@ -143,115 +168,134 @@
     <script>
         // --- JavaScript 邏輯部分 ---
 
-        let secretCode = ""; // 存放正確答案
+        let secretCode = ""; 
+        let currentLength = 4; // 預設長度為 4
 
-        // 1. 初始化遊戲：產生 4 個不重複的數字
+        // 當使用者切換選單時執行
+        function changeDifficulty() {
+            // 讀取選單的值 (3, 4, or 5)
+            let selectBox = document.getElementById("difficulty");
+            currentLength = parseInt(selectBox.value);
+            
+            // 重新開始遊戲以套用新設定
+            initGame();
+        }
+
         function initGame() {
             let numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
             
-            // 洗牌演算法：把陣列打亂
+            // 洗牌
             for (let i = numbers.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
             }
 
-            // 取出前 4 個數字當作答案
-            secretCode = numbers.slice(0, 4).join("");
+            // 根據 currentLength 取出對應數量的數字
+            secretCode = numbers.slice(0, currentLength).join("");
             
-            // 為了測試方便，可以在 Console 偷看答案 (按 F12 -> Console)
-            console.log("偷看答案：" + secretCode);
+            console.log("偷看答案 (" + currentLength + "位)：" + secretCode);
 
-            // 重置介面
+            // 更新介面設定
+            let inputField = document.getElementById("userGuess");
+            inputField.value = "";
+            inputField.disabled = false;
+            inputField.maxLength = currentLength; // 限制輸入長度
+            
+            // 更新提示文字 placeholder (例如變成 123 或 12345)
+            let placeholderText = "";
+            for(let i=1; i<=currentLength; i++) placeholderText += i;
+            inputField.placeholder = placeholderText;
+
+            // 更新規則說明文字
+            document.getElementById("ruleText").innerHTML = `
+                <strong>規則說明：</strong><br>
+                請猜 <strong>${currentLength}</strong> 個不重複的數字。<br>
+                <strong>A</strong> = 數字對且位置對。<br>
+                <strong>B</strong> = 數字對但位置錯。
+            `;
+
             document.getElementById("historyList").innerHTML = "";
             document.getElementById("messageArea").textContent = "";
-            document.getElementById("userGuess").value = "";
-            document.getElementById("userGuess").disabled = false;
             document.getElementById("guessBtn").disabled = false;
             document.getElementById("restartBtn").style.display = "none";
         }
 
-        // 2. 檢查答案
         function checkGuess() {
             let guessInput = document.getElementById("userGuess");
             let guess = guessInput.value;
             let message = document.getElementById("messageArea");
 
-            // --- 驗證輸入是否合法 ---
-            // 必須是 4 個數字
-            if (guess.length !== 4 || isNaN(guess)) {
-                message.textContent = "請輸入 4 個數字喔！";
+            // 驗證長度是否符合目前的難度
+            if (guess.length !== currentLength || isNaN(guess)) {
+                message.textContent = `請輸入 ${currentLength} 個數字喔！`;
                 return;
             }
-            // 檢查是否有重複數字 (例如 1123)
-            if (new Set(guess).size !== 4) {
+            
+            // 驗證是否重複
+            if (new Set(guess).size !== currentLength) {
                 message.textContent = "數字不能重複喔！";
                 return;
             }
 
-            message.textContent = ""; // 清除錯誤訊息
+            message.textContent = ""; 
 
-            // --- 計算 ?A ?B ---
             let countA = 0;
             let countB = 0;
 
-            for (let i = 0; i < 4; i++) {
+            // 迴圈次數也根據難度改變
+            for (let i = 0; i < currentLength; i++) {
                 if (guess[i] === secretCode[i]) {
-                    // 數字一樣，位置也一樣 -> A
                     countA++;
                 } else if (secretCode.includes(guess[i])) {
-                    // 答案裡有這個數字，但位置不一樣 -> B
                     countB++;
                 }
             }
 
-            // --- 顯示結果到列表中 ---
             addHistory(guess, countA, countB);
 
-            // --- 判斷勝負 ---
-            if (countA === 4) {
+            // 判斷是否全對 (A的數量等於題目長度)
+            if (countA === currentLength) {
                 message.textContent = "🎉 恭喜你猜對了！太厲害了！";
                 message.style.color = "green";
                 endGame();
             }
 
-            // 清空輸入框
             guessInput.value = "";
             guessInput.focus();
         }
 
-        // 3. 把猜測結果加到下方列表
         function addHistory(guess, a, b) {
             let list = document.getElementById("historyList");
             let listItem = document.createElement("li");
             listItem.className = "history-item";
 
-            let resultBadgeClass = (a === 4) ? "badge badge-4a" : "badge badge-normal";
+            // 如果全對，顯示綠色標籤
+            let isWin = (a === currentLength);
+            let resultBadgeClass = isWin ? "badge badge-4a" : "badge badge-normal";
 
             listItem.innerHTML = `
                 <span>你猜：${guess}</span>
                 <span class="${resultBadgeClass}">${a}A${b}B</span>
             `;
             
-            // 把最新的猜測放在最上面
             list.insertBefore(listItem, list.firstChild);
         }
 
-        // 4. 遊戲結束
         function endGame() {
             document.getElementById("userGuess").disabled = true;
             document.getElementById("guessBtn").disabled = true;
             document.getElementById("restartBtn").style.display = "block";
         }
 
-        // 啟動遊戲
-        initGame();
-
-        // 讓使用者按 Enter 也可以送出
+        // 監聽 Enter 鍵
         document.getElementById("userGuess").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 checkGuess();
             }
         });
+
+        // 啟動遊戲
+        initGame();
 
     </script>
 </body>
