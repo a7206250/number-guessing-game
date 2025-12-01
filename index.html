@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猜數字遊戲 - 兒童版</title>
+    <style>
+        /* --- CSS 部分：這裡負責網頁的「外觀」 --- */
+        
+        body {
+            font-family: 'Comic Sans MS', '微軟正黑體', sans-serif; /* 使用可愛一點的字體 */
+            background-color: #E0F7FA; /* 淺藍色背景，保護眼睛 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .game-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 20px; /* 圓角設計 */
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* 讓盒子有浮起來的陰影 */
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 5px solid #FFAB91; /* 橘色邊框 */
+        }
+
+        h1 {
+            color: #FF5722;
+        }
+
+        p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 20px;
+            width: 100px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #4CAF50; /* 綠色按鈕 */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049; /* 滑鼠移過去變深色 */
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            min-height: 30px;
+        }
+
+        .correct { color: #2E7D32; } /* 答對時的顏色 */
+        .wrong { color: #D32F2F; }   /* 答錯時的顏色 */
+        
+        .restart-btn {
+            display: none; /* 一開始先隱藏重新開始按鈕 */
+            margin-top: 20px;
+            background-color: #2196F3;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>🔢 猜數字遊戲</h1>
+        <p>我想了一個 <strong>1 到 100</strong> 的數字，你能猜到是多少嗎？</p>
+        
+        <div>
+            <input type="number" id="userGuess" placeholder="?" min="1" max="100">
+            <button onclick="checkGuess()">猜一猜</button>
+        </div>
+
+        <div id="resultMessage" class="message"></div>
+        <button onclick="restartGame()" id="restartBtn" class="restart-btn">再玩一次</button>
+    </div>
+
+    <script>
+        // 1. 初始化變數
+        let secretNumber;
+        
+        // 遊戲開始時，先產生一個隨機數字
+        function initGame() {
+            // Math.random() 會產生 0~0.999... 的小數
+            // 乘以 100 並無條件捨去 (floor) 變成 0~99
+            // 最後 +1 變成 1~100
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            
+            // 重置介面
+            document.getElementById('resultMessage').textContent = "請輸入數字開始遊戲！";
+            document.getElementById('resultMessage').className = "message";
+            document.getElementById('userGuess').value = '';
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('userGuess').disabled = false;
+        }
+
+        // 2. 檢查答案的主要邏輯
+        function checkGuess() {
+            // 取得使用者輸入的數字
+            let userGuess = document.getElementById('userGuess').value;
+            let messageArea = document.getElementById('resultMessage');
+
+            // 確保有輸入數字
+            if (userGuess === '') {
+                messageArea.textContent = "請輸入一個數字喔！";
+                messageArea.className = "message wrong";
+                return;
+            }
+
+            // 轉換成數字型態
+            userGuess = Number(userGuess);
+
+            // 比較邏輯
+            if (userGuess === secretNumber) {
+                messageArea.textContent = "🎉 太棒了！你猜對了！答案就是 " + secretNumber;
+                messageArea.className = "message correct";
+                endGame(); // 遊戲結束
+            } else if (userGuess > secretNumber) {
+                messageArea.textContent = "太大了！再試小一點的數字 👇";
+                messageArea.className = "message wrong";
+            } else {
+                messageArea.textContent = "太小了！再試大一點的數字 👆";
+                messageArea.className = "message wrong";
+            }
+            
+            // 清空輸入框並聚焦，方便下次輸入
+            document.getElementById('userGuess').value = '';
+            document.getElementById('userGuess').focus();
+        }
+
+        // 3. 遊戲結束處理
+        function endGame() {
+            document.getElementById('userGuess').disabled = true; // 鎖住輸入框
+            document.getElementById('restartBtn').style.display = 'inline-block'; // 顯示重新開始按鈕
+        }
+
+        // 4. 重新開始
+        function restartGame() {
+            initGame();
+        }
+
+        // 網頁載入時直接開始遊戲
+        initGame();
+
+    </script>
+</body>
+</html>
