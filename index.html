@@ -368,4 +368,103 @@
             for (let i = 0; i < currentLength; i++) {
                 if (!revealedIndices.has(i)) availableIndices.push(i);
             }
-            if (availableIndices.length ===
+            if (availableIndices.length === 0) return;
+
+            let randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            revealedIndices.add(randomIndex);
+            
+            playSound('hint');
+            updateHintDisplay();
+
+            if (revealedIndices.size === currentLength) {
+                document.getElementById("hintBtn").disabled = true;
+            }
+        }
+
+        function checkGuess() {
+            let guessInput = document.getElementById("userGuess");
+            let guess = guessInput.value;
+            let message = document.getElementById("messageArea");
+
+            if (guess.length !== currentLength || isNaN(guess)) {
+                message.textContent = `請輸入 ${currentLength} 個數字！`;
+                return;
+            }
+            if (new Set(guess).size !== currentLength) {
+                message.textContent = "數字不能重複！";
+                return;
+            }
+
+            message.textContent = ""; 
+
+            let countA = 0;
+            let countB = 0;
+
+            for (let i = 0; i < currentLength; i++) {
+                if (guess[i] === secretCode[i]) countA++;
+                else if (secretCode.includes(guess[i])) countB++;
+            }
+
+            addHistory(guess, countA, countB);
+
+            if (countA === currentLength) {
+                message.textContent = `🎉 恭喜！玩家 ${currentPlayer} 獲勝！`;
+                message.style.color = currentPlayer === 1 ? "#2196F3" : "#F44336";
+                playSound('win');
+                endGame();
+            } else {
+                playSound('switch');
+                switchPlayer();
+                guessInput.value = "";
+                guessInput.focus();
+            }
+        }
+
+        function switchPlayer() {
+            currentPlayer = (currentPlayer === 1) ? 2 : 1;
+            updatePlayerUI();
+        }
+
+        function addHistory(guess, a, b) {
+            let list = document.getElementById("historyList");
+            let listItem = document.createElement("li");
+            listItem.className = "history-item";
+
+            let isWin = (a === currentLength);
+            let resultBadgeClass = isWin ? "badge badge-4a" : "badge";
+            
+            let playerTagClass = (currentPlayer === 1) ? "p-tag p1-tag" : "p-tag p2-tag";
+            let playerName = (currentPlayer === 1) ? "P1" : "P2";
+
+            listItem.innerHTML = `
+                <div>
+                    <span class="${playerTagClass}">${playerName}</span>
+                    <span>${guess}</span>
+                </div>
+                <span class="${resultBadgeClass}" style="background-color: ${isWin ? '#4CAF50' : '#eee'}; color: ${isWin ? 'white' : 'black'}">${a}A${b}B</span>
+            `;
+            
+            list.insertBefore(listItem, list.firstChild);
+        }
+
+        function endGame() {
+            document.getElementById("userGuess").disabled = true;
+            document.getElementById("guessBtn").disabled = true;
+            document.getElementById("hintBtn").disabled = true;
+            document.getElementById("restartBtn").style.display = "block";
+            
+            for(let i=0; i<currentLength; i++) revealedIndices.add(i);
+            updateHintDisplay();
+        }
+
+        document.getElementById("userGuess").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkGuess();
+            }
+        });
+
+        initGame();
+
+    </script>
+</body>
+</html>
