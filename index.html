@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>猜數字高手 1A2B - 多重難度版</title>
+    <title>猜數字高手 1A2B - 提示版</title>
     <style>
         /* --- CSS 外觀設計 --- */
         body {
@@ -30,7 +30,6 @@
 
         h1 { color: #EF6C00; margin-bottom: 10px; }
         
-        /* 難度選擇區塊 */
         .settings-panel {
             margin-bottom: 15px;
             padding: 10px;
@@ -58,6 +57,31 @@
             margin-bottom: 20px;
             text-align: left;
         }
+
+        /* 新增：提示區域樣式 */
+        .hint-area {
+            background-color: #F3E5F5; /* 淺紫色背景 */
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px dashed #AB47BC;
+        }
+
+        .hint-text {
+            font-size: 28px;
+            letter-spacing: 5px;
+            font-weight: bold;
+            color: #7B1FA2;
+            margin: 10px 0;
+        }
+
+        .hint-btn {
+            background-color: #9C27B0; /* 紫色按鈕 */
+            font-size: 16px;
+            padding: 8px 16px;
+        }
+        .hint-btn:hover { background-color: #7B1FA2; }
+        .hint-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
         .input-group {
             display: flex;
@@ -88,6 +112,7 @@
         }
 
         button:hover { background-color: #F57C00; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
 
         .history-list {
             list-style: none;
@@ -146,6 +171,12 @@
             </select>
         </div>
 
+        <div class="hint-area">
+            <div>🕵️ 神秘代碼</div>
+            <div id="hintDisplay" class="hint-text">❓ ❓ ❓ ❓</div>
+            <button onclick="revealOneDigit()" id="hintBtn" class="hint-btn">🔍 偷看一個字</button>
+        </div>
+
         <div class="rules" id="ruleText">
             <strong>規則說明：</strong><br>
             請猜 <strong>4</strong> 個不重複的數字。<br>
@@ -169,44 +200,41 @@
         // --- JavaScript 邏輯部分 ---
 
         let secretCode = ""; 
-        let currentLength = 4; // 預設長度為 4
+        let currentLength = 4;
+        let revealedIndices = new Set(); // 用來記錄哪幾個位置已經被偷看過了
 
-        // 當使用者切換選單時執行
         function changeDifficulty() {
-            // 讀取選單的值 (3, 4, or 5)
             let selectBox = document.getElementById("difficulty");
             currentLength = parseInt(selectBox.value);
-            
-            // 重新開始遊戲以套用新設定
             initGame();
         }
 
         function initGame() {
             let numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
             
-            // 洗牌
             for (let i = numbers.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
             }
 
-            // 根據 currentLength 取出對應數量的數字
             secretCode = numbers.slice(0, currentLength).join("");
             
-            console.log("偷看答案 (" + currentLength + "位)：" + secretCode);
+            console.log("答案：" + secretCode);
 
-            // 更新介面設定
+            // 重置提示狀態
+            revealedIndices.clear(); // 清空已偷看的紀錄
+            updateHintDisplay();     // 更新顯示為全問號
+
+            // 更新介面
             let inputField = document.getElementById("userGuess");
             inputField.value = "";
             inputField.disabled = false;
-            inputField.maxLength = currentLength; // 限制輸入長度
+            inputField.maxLength = currentLength; 
             
-            // 更新提示文字 placeholder (例如變成 123 或 12345)
             let placeholderText = "";
             for(let i=1; i<=currentLength; i++) placeholderText += i;
             inputField.placeholder = placeholderText;
 
-            // 更新規則說明文字
             document.getElementById("ruleText").innerHTML = `
                 <strong>規則說明：</strong><br>
                 請猜 <strong>${currentLength}</strong> 個不重複的數字。<br>
@@ -217,7 +245,53 @@
             document.getElementById("historyList").innerHTML = "";
             document.getElementById("messageArea").textContent = "";
             document.getElementById("guessBtn").disabled = false;
+            document.getElementById("hintBtn").disabled = false; // 啟用提示按鈕
             document.getElementById("restartBtn").style.display = "none";
+        }
+
+        // --- 新增：更新提示顯示畫面 ---
+        function updateHintDisplay() {
+            let displayText = "";
+            for (let i = 0; i < currentLength; i++) {
+                if (revealedIndices.has(i)) {
+                    // 如果這個位置被偷看過，顯示真正的數字
+                    displayText += secretCode[i] + " ";
+                } else {
+                    // 否則顯示問號
+                    displayText += "❓ ";
+                }
+            }
+            document.getElementById("hintDisplay").textContent = displayText;
+        }
+
+        // --- 新增：偷看一個字的邏輯 ---
+        function revealOneDigit() {
+            // 1. 找出所有還沒被揭曉的位置
+            let availableIndices = [];
+            for (let i = 0; i < currentLength; i++) {
+                if (!revealedIndices.has(i)) {
+                    availableIndices.push(i);
+                }
+            }
+
+            // 2. 如果已經全部揭曉了，就不能再按了
+            if (availableIndices.length === 0) {
+                return;
+            }
+
+            // 3. 隨機選一個位置
+            let randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            
+            // 4. 加入已揭曉名單
+            revealedIndices.add(randomIndex);
+
+            // 5. 更新畫面
+            updateHintDisplay();
+
+            // 6. 如果只剩下最後一個沒揭曉，或許可以考慮自動全部顯示，或者停用按鈕
+            if (revealedIndices.size === currentLength) {
+                document.getElementById("hintBtn").disabled = true;
+            }
         }
 
         function checkGuess() {
@@ -225,13 +299,11 @@
             let guess = guessInput.value;
             let message = document.getElementById("messageArea");
 
-            // 驗證長度是否符合目前的難度
             if (guess.length !== currentLength || isNaN(guess)) {
                 message.textContent = `請輸入 ${currentLength} 個數字喔！`;
                 return;
             }
             
-            // 驗證是否重複
             if (new Set(guess).size !== currentLength) {
                 message.textContent = "數字不能重複喔！";
                 return;
@@ -242,7 +314,6 @@
             let countA = 0;
             let countB = 0;
 
-            // 迴圈次數也根據難度改變
             for (let i = 0; i < currentLength; i++) {
                 if (guess[i] === secretCode[i]) {
                     countA++;
@@ -253,7 +324,6 @@
 
             addHistory(guess, countA, countB);
 
-            // 判斷是否全對 (A的數量等於題目長度)
             if (countA === currentLength) {
                 message.textContent = "🎉 恭喜你猜對了！太厲害了！";
                 message.style.color = "green";
@@ -268,8 +338,6 @@
             let list = document.getElementById("historyList");
             let listItem = document.createElement("li");
             listItem.className = "history-item";
-
-            // 如果全對，顯示綠色標籤
             let isWin = (a === currentLength);
             let resultBadgeClass = isWin ? "badge badge-4a" : "badge badge-normal";
 
@@ -277,24 +345,26 @@
                 <span>你猜：${guess}</span>
                 <span class="${resultBadgeClass}">${a}A${b}B</span>
             `;
-            
             list.insertBefore(listItem, list.firstChild);
         }
 
         function endGame() {
             document.getElementById("userGuess").disabled = true;
             document.getElementById("guessBtn").disabled = true;
+            document.getElementById("hintBtn").disabled = true; // 遊戲結束不能再偷看
             document.getElementById("restartBtn").style.display = "block";
+            
+            // 遊戲結束時，顯示全部答案
+            for(let i=0; i<currentLength; i++) revealedIndices.add(i);
+            updateHintDisplay();
         }
 
-        // 監聽 Enter 鍵
         document.getElementById("userGuess").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 checkGuess();
             }
         });
 
-        // 啟動遊戲
         initGame();
 
     </script>
