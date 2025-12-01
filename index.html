@@ -53,7 +53,7 @@
             color: #455A64;
         }
 
-        /* 右上角按鈕區 (音效 + 規則) */
+        /* 右上角按鈕區 */
         .header-controls {
             display: flex;
             gap: 10px;
@@ -73,28 +73,17 @@
         }
         .icon-btn:hover { background-color: #e0e0e0; }
         
-        /* 規則按鈕特別樣式 */
         .rule-btn { background-color: #E0F2F1; color: #00695C; }
-
-        /* 音效開關 */
-        .sound-label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            user-select: none;
-        }
 
         /* --- 規則說明視窗 (Modal) --- */
         .modal-overlay {
-            display: none; /* 預設隱藏 */
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); /* 半透明黑色背景 */
+            background-color: rgba(0, 0, 0, 0.6);
             z-index: 999;
             justify-content: center;
             align-items: center;
@@ -137,7 +126,6 @@
         .rule-list li { margin-bottom: 8px; }
         .rule-tag { background: #eee; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
-        /* --- 動畫 --- */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideIn { from { transform: translateY(-20px); } to { transform: translateY(0); } }
 
@@ -153,14 +141,12 @@
             transition: all 0.5s;
         }
 
-        /* 玩家 1 主題色 (藍) */
         .p1-turn body { background-color: #E3F2FD; }
         .p1-turn .game-container { border-color: #2196F3; }
         .p1-turn .player-indicator { background-color: #2196F3; }
         .p1-turn button.guess-btn { background-color: #2196F3; }
         .p1-turn button.guess-btn:hover { background-color: #1976D2; }
 
-        /* 玩家 2 主題色 (紅) */
         .p2-turn body { background-color: #FFEBEE; }
         .p2-turn .game-container { border-color: #F44336; }
         .p2-turn .player-indicator { background-color: #F44336; }
@@ -290,7 +276,7 @@
 </head>
 <body id="mainBody" class="p1-turn">
 
-    <audio id="soundWin" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+    <audio id="soundWin" src="https://actions.google.com/sounds/v1/crowds/female_crowd_celebration.ogg"></audio>
     <audio id="soundSwitch" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg"></audio>
     <audio id="soundHint" src="https://actions.google.com/sounds/v1/science_fiction/scifi_laser.ogg"></audio>
 
@@ -301,9 +287,7 @@
                 <h1>🏆 猜數字 PK 戰</h1>
             </div>
             <div class="header-controls">
-                <button onclick="openRules()" class="icon-btn rule-btn">
-                    📖 規則
-                </button>
+                <button onclick="openRules()" class="icon-btn rule-btn">📖 規則</button>
                 <button class="icon-btn" onclick="toggleMute()">
                     <span id="soundIcon">🔊</span>
                 </button>
@@ -348,11 +332,7 @@
                 <li><strong>PK 模式：</strong>兩位玩家輪流猜，猜錯就換人！</li>
                 <li><strong><span class="rule-tag">A</span>：</strong>數字對，位置也對。</li>
                 <li><strong><span class="rule-tag">B</span>：</strong>數字對，但位置不對。</li>
-                <li><strong>例子：</strong>答案 1234，你猜 1526。<br>
-                    1 位置對 = 1A<br>
-                    2 有這個字但位置錯 = 1B<br>
-                    結果 = <strong>1A1B</strong>
-                </li>
+                <li><strong>勝利：</strong>最先猜出 <strong>4A0B</strong> 的人獲勝！</li>
                 <li><strong>偷看：</strong>可以偷看一個數字，但對手也會看到喔！</li>
             </ul>
         </div>
@@ -361,14 +341,12 @@
     <script>
         // --- JavaScript 邏輯部分 ---
 
-        // 變數設定
         let secretCode = ""; 
         let currentLength = 4;
         let revealedIndices = new Set(); 
         let currentPlayer = 1;
         let isMuted = false;
 
-        // 確保網頁載入後執行初始化
         window.onload = function() {
             initGame();
         };
@@ -376,13 +354,10 @@
         // --- 規則視窗控制 ---
         function openRules() {
             document.getElementById("ruleModal").style.display = "flex";
-            // 更新規則中的數字 (3/4/5)
             document.getElementById("ruleDigit").textContent = currentLength;
         }
 
         function closeRules(event) {
-            // 如果點到遮罩背景 或 關閉按鈕，則關閉
-            // event 為 null 代表是按鈕直接呼叫
             if (!event || event.target.id === "ruleModal") {
                 document.getElementById("ruleModal").style.display = "none";
             }
@@ -403,7 +378,6 @@
 
             if (audio) {
                 audio.currentTime = 0;
-                // 使用 catch 避免音效錯誤卡住程式
                 audio.play().catch(e => console.log("音效播放失敗(正常):", e));
             }
         }
@@ -416,7 +390,6 @@
         }
 
         function initGame() {
-            // 產生不重複隨機數字
             let numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
             for (let i = numbers.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -425,29 +398,24 @@
             secretCode = numbers.slice(0, currentLength).join("");
             console.log("答案：" + secretCode);
 
-            // 重置狀態
             revealedIndices.clear();
             updateHintDisplay();
             
-            // 重置輸入框與介面
             let inputField = document.getElementById("userGuess");
             inputField.value = "";
             inputField.disabled = false;
             inputField.maxLength = currentLength; 
             
-            // 更新提示字串 (例如 1234)
             let placeholderText = "";
             for(let i=1; i<=currentLength; i++) placeholderText += i;
             inputField.placeholder = placeholderText;
 
-            // 清空訊息與列表
             document.getElementById("historyList").innerHTML = "";
             document.getElementById("messageArea").textContent = "";
             document.getElementById("guessBtn").disabled = false;
             document.getElementById("hintBtn").disabled = false;
             document.getElementById("restartBtn").style.display = "none";
 
-            // 回到玩家 1
             currentPlayer = 1;
             updatePlayerUI();
         }
@@ -465,8 +433,6 @@
                 body.classList.add("p2-turn");
                 indicator.textContent = "👉 輪到：玩家 2 (紅隊)";
             }
-            
-            // 聚焦回輸入框
             document.getElementById("userGuess").focus();
         }
 
@@ -503,17 +469,13 @@
         function checkGuess() {
             let guessInput = document.getElementById("userGuess");
             let message = document.getElementById("messageArea");
-            
-            // 移除可能意外輸入的空格
             let guess = guessInput.value.trim(); 
 
-            // 基本驗證
             if (guess.length !== currentLength || isNaN(guess)) {
                 message.textContent = `請輸入 ${currentLength} 個數字！`;
                 message.style.color = "#D32F2F";
                 return;
             }
-            // 重複數字驗證
             if (new Set(guess).size !== currentLength) {
                 message.textContent = "數字不能重複！";
                 message.style.color = "#D32F2F";
@@ -522,7 +484,6 @@
 
             message.textContent = ""; 
 
-            // 計算 1A2B
             let countA = 0;
             let countB = 0;
 
@@ -534,13 +495,12 @@
             addHistory(guess, countA, countB);
 
             if (countA === currentLength) {
-                // 獲勝邏輯
                 message.textContent = `🎉 恭喜！玩家 ${currentPlayer} 獲勝！`;
                 message.style.color = currentPlayer === 1 ? "#2196F3" : "#F44336";
+                // 播放新的歡呼音效
                 playSound('win');
                 endGame();
             } else {
-                // 猜錯切換邏輯
                 playSound('switch');
                 switchPlayer();
                 guessInput.value = "";
@@ -571,7 +531,6 @@
                 </div>
                 <span class="${resultBadgeClass}" style="background-color: ${isWin ? '#4CAF50' : '#eee'}; color: ${isWin ? 'white' : 'black'}">${a}A${b}B</span>
             `;
-            
             list.insertBefore(listItem, list.firstChild);
         }
 
@@ -580,13 +539,10 @@
             document.getElementById("guessBtn").disabled = true;
             document.getElementById("hintBtn").disabled = true;
             document.getElementById("restartBtn").style.display = "block";
-            
-            // 顯示全部答案
             for(let i=0; i<currentLength; i++) revealedIndices.add(i);
             updateHintDisplay();
         }
 
-        // 綁定 Enter 鍵事件
         document.getElementById("userGuess").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 checkGuess();
